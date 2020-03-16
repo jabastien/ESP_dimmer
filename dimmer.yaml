@@ -1,0 +1,66 @@
+substitutions:
+  devicename: jt_dimmer 
+
+esphome:
+  name: $devicename 
+  platform: ESP32
+  board: pico32
+  #platform: ESP8266
+  #board: nodemcuv2
+  includes:
+    - dimmer.h
+
+
+wifi:
+    ssid: !secret wifi_casa
+    password: !secret wifi_casa_psw
+# Enable fallback hotspot (captive portal) in case wifi connection fails
+    ap:
+      ssid: "Luxled Fallback Hotspot"
+      password: "2N1XeuiPg0Lj"
+
+captive_portal:
+
+uart:
+    baud_rate: 9600
+    rx_pin: RX
+    tx_pin: TX
+
+web_server:
+  port: 80
+
+# Enable logging
+logger:
+    baud_rate: 0
+    #    level: VERY_VERBOSE
+
+# Enable Home Assistant API
+api:
+  password: !secret api_password 
+
+ota:
+  password: !secret ota_password 
+
+sensor:
+    - platform: wifi_signal
+      name: "Wifi signal"
+      update_interval: 5s
+    - platform: custom
+      lambda: |-
+          auto dimmer= new DimmerControl();
+          App.register_component(dimmer);
+          return {dimmer->dummy};
+      sensors:
+        - name: "Setpoint"
+ 
+
+light:
+    - platform: custom
+      lambda: |-
+          auto dimmerlight= new DimmerLight();
+          App.register_component(dimmerlight);
+          return {dimmerlight};
+      lights:
+          - name: $devicename
+            gamma_correct: 1
+            restore_mode: RESTORE_DEFAULT_ON
